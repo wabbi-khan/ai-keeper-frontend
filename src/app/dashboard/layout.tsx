@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -13,8 +14,21 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('dealflow_token');
+      if (!token) {
+        router.replace('/login');
+      } else {
+        setIsAuthenticated(true);
+      }
+    }
+  }, [router]);
 
   const handleCopyPitchLink = () => {
     const portalUrl = typeof window !== 'undefined'
@@ -29,6 +43,17 @@ export default function DashboardLayout({
     });
     setTimeout(() => setCopiedLink(false), 2500);
   };
+
+  if (isAuthenticated === null) {
+    return (
+      <div className="min-h-screen bg-[#F9F8F5] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2.5">
+          <div className="w-6 h-6 rounded-full border-2 border-[#163728] border-t-transparent animate-spin" />
+          <span className="text-xs text-[#73706A] font-financial">Verifying investor credentials...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen w-full bg-[#F9F8F5] text-[#161514] antialiased">

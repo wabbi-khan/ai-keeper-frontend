@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { mockInvestorUsers } from '@/lib/mock-data';
+import { authService } from '@/services/auth.service';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,29 +26,46 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim() || !password) {
+      toast.error('Email and password are required');
+      return;
+    }
+
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const data = await authService.login(email, password);
       toast.success('Signed in to Institutional Workspace', {
-        description: `Welcome to Apex Family Office Deal Flow Desk.`,
+        description: `Welcome back, ${data.user.name} (${data.user.firmName}).`,
       });
       router.push('/dashboard');
-    }, 500);
+    } catch (err: any) {
+      toast.error('Authentication Failed', {
+        description: err.message || 'Invalid email or password. Please try again.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleQuickDemoLogin = (user = mockInvestorUsers[0]) => {
+  const handleQuickDemoLogin = async (demoEmail: string, demoPass: string, firmName: string) => {
+    setEmail(demoEmail);
+    setPassword(demoPass);
     setIsLoading(true);
-    setEmail(user.email);
-    setPassword('••••••••••••');
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success(`Authenticated as ${user.name}`, {
-        description: `${user.role} • ${user.firmName}`,
+    try {
+      const data = await authService.login(demoEmail, demoPass);
+      toast.success(`Authenticated with ${firmName}`, {
+        description: `Welcome back, ${data.user.name}.`,
       });
       router.push('/dashboard');
-    }, 400);
+    } catch (err: any) {
+      toast.error('Demo Login Failed', {
+        description: err.message || 'Could not authenticate demo credentials.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -196,7 +213,8 @@ export default function LoginPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => handleQuickDemoLogin(mockInvestorUsers[0])}
+                  disabled={isLoading}
+                  onClick={() => handleQuickDemoLogin('partner@apexoffice.com', 'Password123!', 'Apex Family Office')}
                   className="w-full border-[#C3DCD0] bg-[#E6EFEA]/40 hover:bg-[#E6EFEA] text-[#1A422F] text-xs h-8 rounded-md font-medium cursor-pointer shadow-none flex items-center justify-center gap-1.5"
                 >
                   <Building2 className="w-3 h-3 text-[#163728]" />
@@ -206,7 +224,8 @@ export default function LoginPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => handleQuickDemoLogin(mockInvestorUsers[1])}
+                  disabled={isLoading}
+                  onClick={() => handleQuickDemoLogin('david@horizonventures.com', 'Password123!', 'Horizon Ventures')}
                   className="w-full border-[#E5E2DC] bg-[#F3F1EC] hover:bg-[#EAE8E2] text-[#161514] text-xs h-8 rounded-md font-medium cursor-pointer shadow-none flex items-center justify-center gap-1.5"
                 >
                   <Zap className="w-3 h-3 text-[#73706A]" />

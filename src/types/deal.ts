@@ -35,9 +35,14 @@ export interface Pitch {
   pros: string[];
   cons: string[];
   redFlags: string[];
-  submittedAt: string;
-  websiteUrl?: string;
+  referenceId?: string;
+  deckFileName?: string;
+  deckMimeType?: string;
+  deckPdfPath?: string;
+  deckUrl?: string;
   pitchDeckUrl?: string;
+  websiteUrl?: string;
+  submittedAt: string;
   teamSize?: number;
   location?: string;
 }

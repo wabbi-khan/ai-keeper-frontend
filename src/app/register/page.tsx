@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { authService } from '@/services/auth.service';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -37,17 +38,34 @@ export default function RegisterPage() {
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '') || 'your-firm-slug';
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!fullName.trim() || !firmName.trim() || !email.trim() || !password) {
+      toast.error('All fields are required');
+      return;
+    }
+
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const data = await authService.register({
+        name: fullName,
+        firmName,
+        email,
+        password,
+      });
+
       toast.success('Gatekeeper Desk Created Successfully', {
-        description: `Workspace provisioned for ${firmName || 'your institution'} with custom intake portal /submit/${slug}`,
+        description: `Workspace provisioned for ${firmName} with custom intake portal /submit/${data.thesisSlug}`,
         duration: 5000,
       });
       router.push('/dashboard');
-    }, 600);
+    } catch (err: any) {
+      toast.error('Registration Failed', {
+        description: err.message || 'Failed to create investor account. Please try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
