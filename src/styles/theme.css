@@ -1,0 +1,68 @@
+/* src/styles/theme.css — Bespoke Institutional Light Theme */
+
+:root {
+  /* Fonts */
+  --font-sans:
+    "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-serif: "Newsreader", Georgia, serif;
+
+  /* Tight architectural corners (6px) - No bubbly AI rounded corners */
+  --radius: 0.375rem;
+
+  /* Warm Paper & Pure White Surfaces */
+  --background: 40 23% 97%; /* #F9F8F5 - Warm Alabaster Canvas */
+  --foreground: 40 6% 8%; /* #161514 - Deep Charcoal Ink */
+
+  --card: 0 0% 100%; /* #FFFFFF - Crisp White Cards */
+  --card-foreground: 40 6% 8%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 40 6% 8%;
+
+  --sidebar-bg: 38 18% 94%; /* #F3F1EC - Warm Stone Sidebar */
+
+  /* Primary Brand: Deep Private-Bank Pine Green (Zero Purple/Indigo) */
+  --primary: 153 43% 15%; /* #163728 - Institutional Forest */
+  --primary-foreground: 40 23% 97%;
+
+  /* Secondary & Muted Stone Tones */
+  --secondary: 38 15% 92%; /* #EEECE6 - Soft Stone */
+  --secondary-foreground: 40 6% 12%;
+
+  --muted: 38 14% 93%; /* #F0EEE9 */
+  --muted-foreground: 36 5% 43%; /* #73706A - Warm Muted Gray */
+
+  --accent: 38 18% 92%;
+  --accent-foreground: 40 6% 8%;
+
+  /* Editorial Semantic Status Colors (Muted, Non-Neon) */
+  --destructive: 4 68% 44%; /* #BD2D22 - Classic Crimson */
+  --destructive-foreground: 0 0% 98%;
+
+  --status-high-bg: 148 38% 93%; /* Soft Sage Background */
+  --status-high-text: 153 50% 20%; /* Deep Forest Text */
+
+  --status-med-bg: 38 65% 92%; /* Warm Ochre Background */
+  --status-med-text: 32 75% 28%; /* Deep Amber Text */
+
+  --status-low-bg: 4 55% 94%; /* Soft Terracotta Background */
+  --status-low-text: 4 65% 35%; /* Deep Rust Text */
+
+  /* Hairline Architectural Borders */
+  --border: 38 13% 88%; /* #E5E2DC - 1px Warm Stone Border */
+  --input: 38 13% 85%;
+  --ring: 153 43% 15%;
+}
+
+/* Helper Utilities */
+.font-financial {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.font-editorial {
+  font-family: var(--font-serif);
+  letter-spacing: -0.015em;
+}
