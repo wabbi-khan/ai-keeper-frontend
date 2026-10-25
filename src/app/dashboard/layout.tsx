@@ -5,10 +5,9 @@ import { useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, Shield, ExternalLink, Copy, Check } from "lucide-react";
+import { Menu, Shield, Copy, Check } from "lucide-react";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { toast } from "sonner";
-import { mockThesis } from "@/lib/mock-data";
 
 export default function DashboardLayout({
   children,
@@ -16,7 +15,6 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -27,11 +25,8 @@ export default function DashboardLayout({
         document.cookie =
           "dealflow_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
         router.replace("/login");
-      } else {
-        if (!document.cookie.includes("dealflow_token=")) {
-          document.cookie = `dealflow_token=${token}; path=/; max-age=604800; SameSite=Lax`;
-        }
-        setIsAuthenticated(true);
+      } else if (!document.cookie.includes("dealflow_token=")) {
+        document.cookie = `dealflow_token=${token}; path=/; max-age=604800; SameSite=Lax`;
       }
     }
   }, [router]);
@@ -39,8 +34,8 @@ export default function DashboardLayout({
   const handleCopyPitchLink = () => {
     const activeSlug =
       typeof window !== "undefined"
-        ? localStorage.getItem("dealflow_thesis_slug") || mockThesis.slug
-        : mockThesis.slug;
+        ? localStorage.getItem("dealflow_thesis_slug") || ""
+        : "";
     const portalUrl =
       typeof window !== "undefined"
         ? `${window.location.origin}/submit/${activeSlug}`
@@ -54,19 +49,6 @@ export default function DashboardLayout({
     });
     setTimeout(() => setCopiedLink(false), 2500);
   };
-
-  if (isAuthenticated === null) {
-    return (
-      <div className="min-h-screen bg-[#F9F8F5] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2.5">
-          <div className="w-6 h-6 rounded-full border-2 border-[#163728] border-t-transparent animate-spin" />
-          <span className="text-xs text-[#73706A] font-financial">
-            Verifying investor credentials...
-          </span>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen w-full bg-[#F9F8F5] text-[#161514] antialiased">
@@ -110,20 +92,11 @@ export default function DashboardLayout({
                   Gatekeeper Desk
                 </span>
               </div>
-              {/* <span className="hidden sm:inline text-[#A5A29C]">/</span> */}
-              {/* <span className="hidden sm:inline text-xs font-financial text-[#73706A]">
-                Mandate v2.4
-              </span> */}
             </div>
           </div>
 
           {/* Right Header Badges & Actions */}
           <div className="flex items-center gap-2.5">
-            {/* <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#F3F1EC] border border-[#E5E2DC] text-xs text-[#73706A]">
-              <span className="w-2 h-2 rounded-full bg-[#163728]" />
-              <span className="font-sans">Real-time Triage Active</span>
-            </div> */}
-
             <Button
               variant="outline"
               size="sm"
@@ -144,16 +117,6 @@ export default function DashboardLayout({
                 </>
               )}
             </Button>
-
-            {/* <a
-              href={`/submit/${mockThesis.slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-[#163728] text-[#F9F8F5] hover:bg-[#10291e] transition-colors h-8"
-            >
-              <span>+ Founder Intake Link</span>
-              <ExternalLink className="w-3 h-3" />
-            </a> */}
 
             <NotificationBell />
           </div>
