@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
 
 /**
  * Centralized Axios instance for DealFlow AI Frontend
@@ -39,6 +39,8 @@ api.interceptors.response.use(
     if (typeof window !== "undefined") {
       if (error.response?.status === 401) {
         localStorage.removeItem("dealflow_token");
+        document.cookie =
+          "dealflow_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
       }
     }
 

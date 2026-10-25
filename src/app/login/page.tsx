@@ -1,16 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
   Shield, 
   ArrowRight, 
   Lock, 
-  Building2, 
-  CheckCircle2, 
-  Sparkles,
-  Zap
+  UserPlus,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,7 +23,19 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // If already authenticated, redirect to /dashboard immediately
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('dealflow_token');
+      if (token) {
+        document.cookie = `dealflow_token=${token}; path=/; max-age=604800; SameSite=Lax`;
+        window.location.href = '/dashboard';
+      }
+    }
+  }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,31 +50,11 @@ export default function LoginPage() {
       toast.success('Signed in to Institutional Workspace', {
         description: `Welcome back, ${data.user.name} (${data.user.firmName}).`,
       });
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     } catch (err: any) {
       toast.error('Authentication Failed', {
         description: err.message || 'Invalid email or password. Please try again.',
       });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleQuickDemoLogin = async (demoEmail: string, demoPass: string, firmName: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setIsLoading(true);
-    try {
-      const data = await authService.login(demoEmail, demoPass);
-      toast.success(`Authenticated with ${firmName}`, {
-        description: `Welcome back, ${data.user.name}.`,
-      });
-      router.push('/dashboard');
-    } catch (err: any) {
-      toast.error('Demo Login Failed', {
-        description: err.message || 'Could not authenticate demo credentials.',
-      });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -183,15 +174,29 @@ export default function LoginPage() {
                     Forgot password?
                   </a>
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="bg-white border-[#E5E2DC] text-xs text-[#161514] placeholder-[#A5A29C] focus-visible:border-[#163728] h-9 rounded-md shadow-none font-financial"
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="bg-white border-[#E5E2DC] text-xs text-[#161514] placeholder-[#A5A29C] focus-visible:border-[#163728] h-9 rounded-md shadow-none font-financial pr-9"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="absolute right-0 top-0 h-full px-2.5 flex items-center text-[#73706A] hover:text-[#161514] transition-colors focus:outline-none cursor-pointer"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-3.5 h-3.5" />
+                    ) : (
+                      <Eye className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <Button
@@ -204,45 +209,32 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            {/* Quick Demo Login Option */}
-            <div className="pt-2 border-t border-[#E5E2DC] space-y-2">
+            {/* Sign Up / Create Account Action */}
+            <div className="pt-3 border-t border-[#E5E2DC] space-y-2">
               <span className="text-[10px] text-[#73706A] uppercase font-sans font-semibold tracking-wider block text-center">
-                Instant Sandbox Access
+                Don&apos;t have an account?
               </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <Link href="/register" className="block w-full">
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={isLoading}
-                  onClick={() => handleQuickDemoLogin('partner@apexoffice.com', 'Password123!', 'Apex Family Office')}
-                  className="w-full border-[#C3DCD0] bg-[#E6EFEA]/40 hover:bg-[#E6EFEA] text-[#1A422F] text-xs h-8 rounded-md font-medium cursor-pointer shadow-none flex items-center justify-center gap-1.5"
+                  className="w-full border-[#E5E2DC] hover:border-[#163728] bg-white hover:bg-[#F3F1EC] text-[#161514] text-xs h-9 rounded-md font-medium cursor-pointer shadow-none flex items-center justify-center gap-2 transition-colors"
                 >
-                  <Building2 className="w-3 h-3 text-[#163728]" />
-                  <span>Apex Family Office</span>
+                  <UserPlus className="w-3.5 h-3.5 text-[#163728]" />
+                  <span>Create Institutional Account</span>
                 </Button>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={isLoading}
-                  onClick={() => handleQuickDemoLogin('david@horizonventures.com', 'Password123!', 'Horizon Ventures')}
-                  className="w-full border-[#E5E2DC] bg-[#F3F1EC] hover:bg-[#EAE8E2] text-[#161514] text-xs h-8 rounded-md font-medium cursor-pointer shadow-none flex items-center justify-center gap-1.5"
-                >
-                  <Zap className="w-3 h-3 text-[#73706A]" />
-                  <span>Horizon Ventures</span>
-                </Button>
-              </div>
+              </Link>
             </div>
           </Card>
 
           {/* Onboarding Link */}
           <div className="text-center text-xs text-[#73706A]">
-            <span>New family office or venture firm? </span>
+            <span>Need an institutional account? </span>
             <Link
               href="/register"
               className="text-[#163728] font-semibold hover:underline"
             >
-              Request institutional onboarding
+              Sign up for desk access
             </Link>
           </div>
         </div>

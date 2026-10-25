@@ -79,13 +79,13 @@ export const mockTheses: Record<string, InvestorThesis> = {
 export function getThesisBySlug(slug: string): InvestorThesis {
   return mockTheses[slug] || {
     ...mockThesis,
-    slug: slug || 'apex-family-office',
+    slug: slug || 'desk',
     firmName: slug
       ? slug
           .split('-')
           .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
           .join(' ')
-      : 'Apex Family Office',
+      : 'Institutional Desk',
   };
 }
 

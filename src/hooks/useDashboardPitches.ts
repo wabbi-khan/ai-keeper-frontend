@@ -18,24 +18,30 @@ export interface DashboardPitchesFilter {
 export const dashboardPitchKeys = {
   all: ['dashboard-pitches'] as const,
   list: (filters: DashboardPitchesFilter) =>
-    ['dashboard-pitches', { status: filters.status, search: filters.search, page: filters.page }] as const,
+    ['dashboard-pitches', { slug: filters.slug, status: filters.status, search: filters.search, page: filters.page }] as const,
 };
 
 /**
  * Custom TanStack Query hook to fetch pitches for the investor dashboard.
  * Supports configurable search input debouncing (e.g. 400ms) to prevent high-frequency API calls.
  *
- * Query key: ['dashboard-pitches', { status, search, page }]
+ * Query key: ['dashboard-pitches', { slug, status, search, page }]
  */
 export function useDashboardPitches(filters: DashboardPitchesFilter = {}) {
   const {
     status,
     search: rawSearch,
     page,
-    slug = 'apex-family-office',
+    slug: explicitSlug,
     sector,
     debounceMs = 400,
   } = filters;
+
+  const resolvedSlug =
+    explicitSlug ||
+    (typeof window !== 'undefined'
+      ? localStorage.getItem('dealflow_thesis_slug') || undefined
+      : undefined);
 
   // Debounce search query so API calls to /api/pitches?search=... wait until typing pauses
   const debouncedSearch = useDebounce(rawSearch, debounceMs);
@@ -43,10 +49,10 @@ export function useDashboardPitches(filters: DashboardPitchesFilter = {}) {
   const normalizedSearch = effectiveSearch?.trim() ? effectiveSearch.trim() : undefined;
 
   return useQuery<Pitch[], Error>({
-    queryKey: ['dashboard-pitches', { status, search: normalizedSearch, page }],
+    queryKey: ['dashboard-pitches', { slug: resolvedSlug, status, search: normalizedSearch, page }],
     queryFn: async () => {
       return await pitchService.getPitches({
-        slug,
+        slug: resolvedSlug,
         status: status && status !== 'ALL' ? status : undefined,
         search: normalizedSearch,
         page,

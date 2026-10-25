@@ -17,7 +17,7 @@ export interface AuthResponse {
     token: string;
     user: AuthUserData;
     thesisSlug: string;
-    thesis: any;
+    thesis?: any;
   };
 }
 
@@ -26,8 +26,10 @@ export const authService = {
    * Log in investor with email & password
    */
   login: async (email: string, password: string): Promise<AuthResponse['data']> => {
+    const normalizedEmail = email.trim().toLowerCase();
+
     const res = await api.post<AuthResponse>('/auth/login', {
-      email: email.trim().toLowerCase(),
+      email: normalizedEmail,
       password,
     });
 
@@ -36,6 +38,7 @@ export const authService = {
       localStorage.setItem('dealflow_token', data.token);
       localStorage.setItem('dealflow_user', JSON.stringify(data.user));
       localStorage.setItem('dealflow_thesis_slug', data.thesisSlug || data.user.slug);
+      document.cookie = `dealflow_token=${data.token}; path=/; max-age=604800; SameSite=Lax`;
     }
 
     return data;
@@ -61,6 +64,7 @@ export const authService = {
       localStorage.setItem('dealflow_token', data.token);
       localStorage.setItem('dealflow_user', JSON.stringify(data.user));
       localStorage.setItem('dealflow_thesis_slug', data.thesisSlug || data.user.slug);
+      document.cookie = `dealflow_token=${data.token}; path=/; max-age=604800; SameSite=Lax`;
     }
 
     return data;
@@ -74,6 +78,8 @@ export const authService = {
       localStorage.removeItem('dealflow_token');
       localStorage.removeItem('dealflow_user');
       localStorage.removeItem('dealflow_thesis_slug');
+      document.cookie =
+        'dealflow_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
     }
   },
 
@@ -92,6 +98,19 @@ export const authService = {
       }
     }
     return null;
+  },
+
+  /**
+   * Retrieve active authenticated thesis slug from localStorage
+   */
+  getThesisSlug: (): string => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('dealflow_thesis_slug');
+      if (stored && stored.trim().length > 0) return stored.trim();
+      const user = authService.getCurrentUser();
+      if (user?.slug && user.slug.trim().length > 0) return user.slug.trim();
+    }
+    return '';
   },
 
   /**

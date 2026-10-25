@@ -14,6 +14,7 @@ import {
   mockThesis,
 } from '@/lib/mock-data';
 import { toast } from 'sonner';
+import { thesisService } from '@/services/thesis.service';
 
 export const dealQueryKeys = {
   pitches: ['pitches'] as const,
@@ -36,11 +37,22 @@ export function usePitchesQuery() {
 /**
  * Hook to fetch an investor's mandate thesis
  */
-export function useThesisQuery(slug: string = 'apex-family-office') {
+export function useThesisQuery(slug?: string) {
+  const resolvedSlug =
+    slug ||
+    (typeof window !== 'undefined'
+      ? localStorage.getItem('dealflow_thesis_slug') || ''
+      : '');
+
   return useQuery({
-    queryKey: dealQueryKeys.thesis(slug),
+    queryKey: dealQueryKeys.thesis(resolvedSlug),
     queryFn: async () => {
-      return await fetchMockThesis(slug);
+      if (!resolvedSlug) return await fetchMockThesis();
+      try {
+        return await thesisService.getPublicThesis(resolvedSlug);
+      } catch (err) {
+        return await fetchMockThesis(resolvedSlug);
+      }
     },
   });
 }
@@ -222,15 +234,21 @@ export function useSubmitPitchMutation() {
   return useMutation({
     mutationFn: async ({
       values,
-      thesisSlug = 'apex-family-office',
+      thesisSlug: explicitSlug,
     }: {
       values: PitchSubmissionValues;
       thesisSlug?: string;
     }) => {
+      const activeSlug =
+        explicitSlug ||
+        (typeof window !== 'undefined'
+          ? localStorage.getItem('dealflow_thesis_slug') || ''
+          : '');
+
       // 1. Resolve active thesis for the tenant
       const activeThesis: InvestorThesis =
-        queryClient.getQueryData<InvestorThesis>(dealQueryKeys.thesis(thesisSlug)) ||
-        getThesisBySlug(thesisSlug) ||
+        queryClient.getQueryData<InvestorThesis>(dealQueryKeys.thesis(activeSlug)) ||
+        getThesisBySlug(activeSlug) ||
         mockThesis;
 
       // 2. Simulate AI Gatekeeper Analysis

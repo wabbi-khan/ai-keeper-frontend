@@ -20,7 +20,8 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { mockThesis } from '@/lib/mock-data';
+import { authService } from '@/services/auth.service';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 interface AppSidebarProps {
   className?: string;
@@ -31,6 +32,7 @@ export function AppSidebar({ className, onNavigate }: AppSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [copiedLink, setCopiedLink] = useState(false);
+  const { user: currentUser, slug: userSlug, firmName: userFirmName, name: userName } = useCurrentUser();
 
   const navItems = [
     {
@@ -52,10 +54,16 @@ export function AppSidebar({ className, onNavigate }: AppSidebarProps) {
   const handleCopyPitchLink = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const portalUrl = typeof window !== 'undefined'
-      ? `${window.location.origin}/submit/${mockThesis.slug}`
-      : `/submit/${mockThesis.slug}`;
-    
+    const activeSlug =
+      userSlug ||
+      (typeof window !== 'undefined'
+        ? localStorage.getItem('dealflow_thesis_slug') || ''
+        : '');
+    const portalUrl =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}/submit/${activeSlug}`
+        : `/submit/${activeSlug}`;
+
     navigator.clipboard.writeText(portalUrl);
     setCopiedLink(true);
     toast.success('Public pitch portal link copied!', {
@@ -66,8 +74,9 @@ export function AppSidebar({ className, onNavigate }: AppSidebarProps) {
   };
 
   const handleSignOut = () => {
-    toast.info('Signed out of Apex Family Office desk');
-    router.push('/login');
+    authService.logout();
+    toast.info('Signed out of DealFlow desk');
+    window.location.href = '/login';
   };
 
   return (
@@ -178,7 +187,7 @@ export function AppSidebar({ className, onNavigate }: AppSidebarProps) {
                 <span>Public Intake Portal</span>
               </span>
               <a
-                href={`/submit/${mockThesis.slug}`}
+                href={`/submit/${userSlug || ''}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[11px] text-[#73706A] hover:text-[#163728]"
@@ -189,7 +198,7 @@ export function AppSidebar({ className, onNavigate }: AppSidebarProps) {
             </div>
             
             <div className="text-[10px] font-financial text-[#73706A] bg-[#F9F8F5] p-1.5 rounded border border-[#E5E2DC] truncate">
-              /submit/{mockThesis.slug}
+              /submit/{userSlug || 'your-firm-slug'}
             </div>
 
             <Button
@@ -220,14 +229,19 @@ export function AppSidebar({ className, onNavigate }: AppSidebarProps) {
         <div className="p-2.5 rounded-md bg-white border border-[#E5E2DC] flex items-center justify-between">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="flex items-center justify-center w-8 h-8 rounded-md bg-[#EAE8E2] border border-[#E5E2DC] font-semibold text-xs text-[#163728] font-financial shrink-0">
-              AF
+              {userFirmName
+                .split(' ')
+                .map((w) => w[0])
+                .slice(0, 2)
+                .join('')
+                .toUpperCase() || 'ID'}
             </div>
             <div className="flex flex-col min-w-0">
               <span className="text-xs font-semibold text-[#161514] truncate">
-                Apex Family Office
+                {userFirmName}
               </span>
               <span className="text-[10px] text-[#73706A] truncate">
-                Victoria Sterling
+                {userName}
               </span>
             </div>
           </div>

@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { thesisFormSchema, ThesisFormValues } from '@/lib/validations/deal';
 import { mockThesis } from '@/lib/mock-data';
 import { useThesisQuery, useUpdateThesisMutation } from '@/hooks/use-deals';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -43,7 +44,8 @@ import {
 } from 'lucide-react';
 
 export default function ThesisConfigurationPage() {
-  const { data: thesis = mockThesis } = useThesisQuery('apex-family-office');
+  const { slug: userSlug, firmName: userFirmName } = useCurrentUser();
+  const { data: thesis = mockThesis } = useThesisQuery(userSlug || undefined);
   const updateThesisMutation = useUpdateThesisMutation();
 
   const [sectorInput, setSectorInput] = useState('');
@@ -78,8 +80,8 @@ export default function ThesisConfigurationPage() {
   useEffect(() => {
     if (thesis) {
       form.reset({
-        firmName: thesis.firmName,
-        slug: thesis.slug,
+        firmName: thesis.firmName || userFirmName,
+        slug: thesis.slug || userSlug,
         targetSectors: thesis.targetSectors,
         minMonthlyRev: thesis.minMonthlyRev,
         maxValuation: thesis.maxValuation,
@@ -91,7 +93,7 @@ export default function ThesisConfigurationPage() {
         customCriteria: thesis.customCriteria,
       });
     }
-  }, [thesis, form]);
+  }, [thesis, form, userFirmName, userSlug]);
 
   // Watch form values for live preview calculation
   const watchedValues = form.watch();
@@ -246,7 +248,7 @@ export default function ThesisConfigurationPage() {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="apex-family-office"
+                          placeholder="e.g. your-firm-slug"
                           className="bg-white border-[#E5E2DC] text-xs font-financial text-[#161514] placeholder-[#A5A29C] focus-visible:border-[#163728] h-9 rounded-md shadow-none"
                           {...field}
                         />

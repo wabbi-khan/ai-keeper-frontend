@@ -56,14 +56,19 @@ export const pitchService = {
       | { slug?: string; status?: string; search?: string; page?: number; sector?: string },
     maybeFilters?: { status?: string; sector?: string; search?: string; page?: number }
   ): Promise<Pitch[]> => {
-    let slug = 'apex-family-office';
+    let slug = '';
+    if (typeof window !== 'undefined') {
+      slug = localStorage.getItem('dealflow_thesis_slug') || '';
+    }
     let filters: { status?: string; sector?: string; search?: string; page?: number } | undefined;
 
-    if (typeof slugOrParams === 'string') {
-      slug = slugOrParams;
+    if (typeof slugOrParams === 'string' && slugOrParams.trim().length > 0) {
+      slug = slugOrParams.trim();
       filters = maybeFilters;
     } else if (slugOrParams && typeof slugOrParams === 'object') {
-      if (slugOrParams.slug) slug = slugOrParams.slug;
+      if (slugOrParams.slug && slugOrParams.slug.trim().length > 0) {
+        slug = slugOrParams.slug.trim();
+      }
       filters = slugOrParams;
     }
 
@@ -84,7 +89,7 @@ export const pitchService = {
    * Fetch a single pitch by ID
    */
   getPitchById: async (pitchId: string, slug?: string): Promise<Pitch | null> => {
-    const list = await pitchService.getPitches(slug || 'apex-family-office');
+    const list = await pitchService.getPitches(slug);
     return list.find((p) => p.id === pitchId) || null;
   },
 

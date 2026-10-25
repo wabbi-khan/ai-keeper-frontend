@@ -1,13 +1,14 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { AppSidebar } from '@/components/layout/app-sidebar';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import { Menu, Shield, Bell, ExternalLink, Copy, Check } from 'lucide-react';
-import { toast } from 'sonner';
-import { mockThesis } from '@/lib/mock-data';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { AppSidebar } from "@/components/layout/app-sidebar";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Menu, Shield, ExternalLink, Copy, Check } from "lucide-react";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { toast } from "sonner";
+import { mockThesis } from "@/lib/mock-data";
 
 export default function DashboardLayout({
   children,
@@ -20,24 +21,34 @@ export default function DashboardLayout({
   const [copiedLink, setCopiedLink] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('dealflow_token');
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("dealflow_token");
       if (!token) {
-        router.replace('/login');
+        document.cookie =
+          "dealflow_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+        router.replace("/login");
       } else {
+        if (!document.cookie.includes("dealflow_token=")) {
+          document.cookie = `dealflow_token=${token}; path=/; max-age=604800; SameSite=Lax`;
+        }
         setIsAuthenticated(true);
       }
     }
   }, [router]);
 
   const handleCopyPitchLink = () => {
-    const portalUrl = typeof window !== 'undefined'
-      ? `${window.location.origin}/submit/${mockThesis.slug}`
-      : `/submit/${mockThesis.slug}`;
+    const activeSlug =
+      typeof window !== "undefined"
+        ? localStorage.getItem("dealflow_thesis_slug") || mockThesis.slug
+        : mockThesis.slug;
+    const portalUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/submit/${activeSlug}`
+        : `/submit/${activeSlug}`;
 
     navigator.clipboard.writeText(portalUrl);
     setCopiedLink(true);
-    toast.success('Public pitch portal link copied!', {
+    toast.success("Public pitch portal link copied!", {
       description: portalUrl,
       duration: 4000,
     });
@@ -49,7 +60,9 @@ export default function DashboardLayout({
       <div className="min-h-screen bg-[#F9F8F5] flex items-center justify-center">
         <div className="flex flex-col items-center gap-2.5">
           <div className="w-6 h-6 rounded-full border-2 border-[#163728] border-t-transparent animate-spin" />
-          <span className="text-xs text-[#73706A] font-financial">Verifying investor credentials...</span>
+          <span className="text-xs text-[#73706A] font-financial">
+            Verifying investor credentials...
+          </span>
         </div>
       </div>
     );
@@ -93,21 +106,23 @@ export default function DashboardLayout({
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2 text-sm font-semibold text-[#161514]">
                 <Shield className="w-4 h-4 text-[#163728] hidden sm:inline" />
-                <span className="font-editorial text-base font-bold">Apex Gatekeeper Desk</span>
+                <span className="font-editorial text-base font-bold">
+                  Gatekeeper Desk
+                </span>
               </div>
-              <span className="hidden sm:inline text-[#A5A29C]">/</span>
-              <span className="hidden sm:inline text-xs font-financial text-[#73706A]">
+              {/* <span className="hidden sm:inline text-[#A5A29C]">/</span> */}
+              {/* <span className="hidden sm:inline text-xs font-financial text-[#73706A]">
                 Mandate v2.4
-              </span>
+              </span> */}
             </div>
           </div>
 
           {/* Right Header Badges & Actions */}
           <div className="flex items-center gap-2.5">
-            <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#F3F1EC] border border-[#E5E2DC] text-xs text-[#73706A]">
+            {/* <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#F3F1EC] border border-[#E5E2DC] text-xs text-[#73706A]">
               <span className="w-2 h-2 rounded-full bg-[#163728]" />
               <span className="font-sans">Real-time Triage Active</span>
-            </div>
+            </div> */}
 
             <Button
               variant="outline"
@@ -118,7 +133,9 @@ export default function DashboardLayout({
               {copiedLink ? (
                 <>
                   <Check className="w-3.5 h-3.5 text-[#163728]" />
-                  <span className="text-[#163728] font-medium">Link Copied</span>
+                  <span className="text-[#163728] font-medium">
+                    Link Copied
+                  </span>
                 </>
               ) : (
                 <>
@@ -128,7 +145,7 @@ export default function DashboardLayout({
               )}
             </Button>
 
-            <a
+            {/* <a
               href={`/submit/${mockThesis.slug}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -136,16 +153,9 @@ export default function DashboardLayout({
             >
               <span>+ Founder Intake Link</span>
               <ExternalLink className="w-3 h-3" />
-            </a>
+            </a> */}
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-[#73706A] hover:text-[#161514] hover:bg-[#F3F1EC]"
-              aria-label="Notifications"
-            >
-              <Bell className="w-4 h-4" />
-            </Button>
+            <NotificationBell />
           </div>
         </header>
 
